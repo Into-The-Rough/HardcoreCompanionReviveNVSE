@@ -56,7 +56,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)nvse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)internal;$(ProjectDir)internal\Game;$(ProjectDir)internal\Game\Bethesda;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;RUNTIME_VERSION=0x040020D0;RUNTIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -78,7 +78,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)internal;$(ProjectDir)internal\Game;$(ProjectDir)internal\Game\Bethesda;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;RUNTIME_VERSION=0x040020D0;RUNTIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader />
@@ -107,6 +107,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="internal\HardcoreCompanionRevive.cpp" />
+    <ClCompile Include="internal\HCR-DownedMarkers.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="internal\HardcoreCompanionRevive.hpp" />
+    <ClInclude Include="internal\HCR-DownedMarkers.hpp" />
+    <ClInclude Include="internal\HCR-Settings.hpp" />
+    <ClInclude Include="internal\PatchUtil.hpp" />
+    <ClInclude Include="internal\Game\Bethesda\Types.hpp" />
+    <ClInclude Include="internal\Game\Bethesda\NVSEInterface.hpp" />
+    <ClInclude Include="internal\Game\Bethesda\TESForm.hpp" />
+    <ClInclude Include="internal\Game\Bethesda\Actor.hpp" />
+    <ClInclude Include="internal\Game\Bethesda\Sound.hpp" />
+    <ClInclude Include="internal\Game\Bethesda\Console.hpp" />
+    <ClInclude Include="internal\Game\Bethesda\Tile.hpp" />
+    <ClInclude Include="internal\Game\Bethesda\NiPoint3.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
