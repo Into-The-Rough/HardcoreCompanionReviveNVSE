@@ -78,6 +78,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
+      <Optimization>MinSpace</Optimization>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(ProjectDir)internal;$(ProjectDir)internal\Game;$(ProjectDir)internal\Game\Bethesda;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;RUNTIME_VERSION=0x040020D0;RUNTIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -86,6 +88,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
@@ -93,13 +98,15 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Installing DLL...</Message>
-      <Command>copy /Y "$(TargetPath)" "D:\Modding\VNV\mods\HardcoreCompanionReviveNVSE\NVSE\Plugins\$(TargetFileName)"</Command>
+      <Message>Copying DLL and PDB to mod folder</Message>
+      <Command>copy /Y "$(TargetPath)" "D:\Modding\VNV\mods\HardcoreCompanionReviveNVSE\NVSE\Plugins\$(TargetFileName)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "D:\Modding\VNV\mods\HardcoreCompanionReviveNVSE\NVSE\Plugins\$(TargetName).pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

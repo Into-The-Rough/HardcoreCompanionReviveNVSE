@@ -17,7 +17,7 @@ namespace Settings {
 		char* lastSlash = strrchr(g_iniPath, '\\');
 		if (lastSlash) {
 			strcpy_s(lastSlash + 1, MAX_PATH - (lastSlash + 1 - g_iniPath),
-				"Data\\Config\\HardcoreCompanionReviveNVSE\\HardcoreCompanionReviveNVSE.ini");
+				"Data\\config\\HardcoreCompanionReviveNVSE.ini");
 		}
 
 			bShowMessage = GetPrivateProfileIntA("General", "bShowMessage", 1, g_iniPath) != 0;
