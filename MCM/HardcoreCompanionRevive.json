@@ -1,0 +1,78 @@
+{
+	"modName": "HardcoreCompanionRevive",
+	"displayName": "Hardcore Companion Revive",
+	"description": "Configure companion revive settings",
+	"saveFile": "HardcoreCompanionReviveNVSE/HardcoreCompanionReviveNVSE.ini",
+	"minMCMVersion": 1.00,
+	"minModVersion": 1.00,
+	"requirements": [
+		{ "type": "file", "file": "NVSE/plugins/scripts/ln_hcr-mcm.txt" },
+		{ "type": "file", "file": "NVSE/plugins/HardcoreCompanionReviveNVSE.dll" }
+	],
+	"submenus": {
+		"0": {
+			"listTitle": "Settings",
+			"pageTitle": "Hardcore Companion Revive",
+			"columns": 1,
+			"enable": 1,
+				"options": {
+					"1": {
+						"title": "General",
+						"enable": 1,
+						"type": 0
+					},
+					"2": {
+						"title": "Show Messages",
+						"type": 5,
+						"enable": 1,
+						"mouse": "Show UI messages for item removed, need item, and combat restrictions",
+						"vars": [{ "configINI": "General:bShowMessage", "default": 1 }]
+					},
+					"3": {
+						"title": "Show Downed Marker",
+						"type": 5,
+						"enable": 1,
+						"mouse": "Show icon and companion name above downed companions",
+						"vars": [{ "configINI": "General:bShowIcon", "default": 1 }]
+					},
+					"4": {
+						"title": "Allow Revive In Combat",
+						"type": 5,
+						"enable": 1,
+						"mouse": "Allow reviving companions while in combat",
+						"vars": [{ "configINI": "General:bAllowInCombat", "default": 1 }]
+					},
+					"5": {
+						"title": " ",
+						"enable": 1,
+						"type": 0
+					},
+					"6": {
+						"title": "Bleedout",
+						"enable": 1,
+						"type": 0
+					},
+					"7": {
+						"title": "Allow Companion Death",
+						"type": 5,
+						"enable": 1,
+						"mouse": "Companions will die if not revived within the bleedout time. If disabled, companions stay unconscious indefinitely.",
+						"vars": [{ "configINI": "General:bAllowDeath", "default": 1 }]
+					},
+					"8": {
+						"title": "Bleedout Time",
+						"type": 2.5,
+						"enable": 1,
+						"mouse": "Time in game hours before a companion dies (only used if Allow Companion Death is enabled)",
+					"vars": [{ "configINI": "General:fBleedoutTime", "default": 1 }],
+					"scale": {
+						"valueDecimal": 1,
+						"valueIncrement": 0.5,
+						"valueMax": 24.0,
+						"valueMin": 0.5
+					}
+				}
+			}
+		}
+	}
+}

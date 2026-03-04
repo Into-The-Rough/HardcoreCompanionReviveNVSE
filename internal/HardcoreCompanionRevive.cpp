@@ -17,7 +17,6 @@ namespace HardcoreCompanionRevive
 	static UInt32 s_revivingCompanionRefID = 0;
 	static UInt32 s_pendingHealthRestoreRefID = 0;
 	static float s_pendingMaxHealth = 0.0f;
-	static int s_damageDelayFrames = 0;
 	static bool s_hooksInstalled = false;
 	static bool s_killHookInstalled = false;
 	static bool s_hooksInitPending = false;
@@ -231,9 +230,9 @@ namespace HardcoreCompanionRevive
 
 		UntrackCompanion(((TESForm*)actor)->refID);
 
-		UInt32* lifeStatePtr = (UInt32*)((UInt8*)actor + 0x108);
-		*lifeStatePtr = kLifeState_Alive;
-		process->SetEssentialDownTimer(0.0f);
+		//let engine handle recovery naturally via UpdateEssentialDownTimer
+		//this ensures proper havok cleanup, animation, and life state transition
+		process->SetEssentialDownTimer(0.5f);
 
 		void* avOwner = (void*)((UInt8*)actor + 0xA4);
 		void** avOwnerVtbl = *(void***)avOwner;
@@ -241,14 +240,8 @@ namespace HardcoreCompanionRevive
 		GetBaseAVFn getBaseAV = (GetBaseAVFn)avOwnerVtbl[1];
 		float maxHealth = getBaseAV(avOwner, kAVCode_Health);
 
-		void** vtbl = *(void***)actor;
-		typedef void (__thiscall *InitGetUpPackageFn)(void*);
-		InitGetUpPackageFn initGetUp = (InitGetUpPackageFn)vtbl[0x106];
-		initGetUp(actor);
-
 		s_pendingHealthRestoreRefID = ((TESForm*)actor)->refID;
 		s_pendingMaxHealth = maxHealth;
-		s_damageDelayFrames = 30;
 
 		return true;
 	}
@@ -493,27 +486,31 @@ namespace HardcoreCompanionRevive
 	}
 
 	static void ApplyPendingHealthRestore() {
-		if (s_pendingHealthRestoreRefID && s_damageDelayFrames > 0) {
-			s_damageDelayFrames--;
-			if (s_damageDelayFrames == 0) {
-				UInt32 refID = s_pendingHealthRestoreRefID;
-				float maxHealth = s_pendingMaxHealth;
-				s_pendingHealthRestoreRefID = 0;
-				s_pendingMaxHealth = 0.0f;
+		if (!s_pendingHealthRestoreRefID) return;
 
-				TESForm* form = LookupFormByID(refID);
-				if (form) {
-					void* actor = (void*)form;
-					typedef void (__thiscall *GameModActorValueFn)(void*, UInt32, float, void*);
-					GameModActorValueFn modAV = (GameModActorValueFn)kAddr_GameModActorValueF;
-					float damageAmount = -(maxHealth * 0.75f);
-					modAV(actor, kAVCode_Health, damageAmount, nullptr);
+		TESForm* form = LookupFormByID(s_pendingHealthRestoreRefID);
+		if (!form) {
+			s_pendingHealthRestoreRefID = 0;
+			s_pendingMaxHealth = 0.0f;
+			return;
+		}
 
-					if (g_scriptInterface && g_f4stDispatchScript) {
-						g_scriptInterface->CallFunctionAlt(g_f4stDispatchScript, nullptr, 0);
-					}
-				}
-			}
+		void* actor = (void*)form;
+
+		//wait for engine to finish recovery (life state transitions from unconscious to alive)
+		if (GetActorLifeState(actor) == kLifeState_EssentialUnconscious) return;
+
+		float maxHealth = s_pendingMaxHealth;
+		s_pendingHealthRestoreRefID = 0;
+		s_pendingMaxHealth = 0.0f;
+
+		typedef void (__thiscall *GameModActorValueFn)(void*, UInt32, float, void*);
+		GameModActorValueFn modAV = (GameModActorValueFn)kAddr_GameModActorValueF;
+		float damageAmount = -(maxHealth * 0.75f);
+		modAV(actor, kAVCode_Health, damageAmount, nullptr);
+
+		if (g_scriptInterface && g_f4stDispatchScript) {
+			g_scriptInterface->CallFunctionAlt(g_f4stDispatchScript, nullptr, 0);
 		}
 	}
 
@@ -739,7 +736,6 @@ namespace HardcoreCompanionRevive
 			s_revivingCompanionRefID = 0;
 			s_pendingHealthRestoreRefID = 0;
 			s_pendingMaxHealth = 0.0f;
-			s_damageDelayFrames = 0;
 			s_forceKillActor = nullptr;
 			s_killingCompanion = false;
 			memset(s_unconsciousCompanions, 0, sizeof(s_unconsciousCompanions));
