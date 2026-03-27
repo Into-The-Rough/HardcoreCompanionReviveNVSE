@@ -230,9 +230,9 @@ namespace HardcoreCompanionRevive
 
 		UntrackCompanion(((TESForm*)actor)->refID);
 
-		//let engine handle recovery naturally via UpdateEssentialDownTimer
-		//this ensures proper havok cleanup, animation, and life state transition
-		process->SetEssentialDownTimer(0.5f);
+		//engine skips ModEssentialDownTimer for teammates during combat,
+		//but the <= 0.0 check still runs every frame - so set to 0 for immediate recovery
+		process->SetEssentialDownTimer(0.0f);
 
 		void* avOwner = (void*)((UInt8*)actor + 0xA4);
 		void** avOwnerVtbl = *(void***)avOwner;
