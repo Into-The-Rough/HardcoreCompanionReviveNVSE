@@ -2,7 +2,7 @@
 	"modName": "HardcoreCompanionRevive",
 	"displayName": "Hardcore Companion Revive",
 	"description": "Configure companion revive settings",
-	"saveFile": "HardcoreCompanionReviveNVSE/HardcoreCompanionReviveNVSE.ini",
+	"saveFile": "HardcoreCompanionReviveNVSE.ini",
 	"minMCMVersion": 1.00,
 	"minModVersion": 1.00,
 	"requirements": [
@@ -57,14 +57,14 @@
 						"type": 5,
 						"enable": 1,
 						"mouse": "Companions will die if not revived within the bleedout time. If disabled, companions stay unconscious indefinitely.",
-						"vars": [{ "configINI": "General:bAllowDeath", "default": 1 }]
+						"vars": [{ "configINI": "General:bAllowDeath", "default": 0 }]
 					},
 					"8": {
 						"title": "Bleedout Time",
 						"type": 2.5,
 						"enable": 1,
 						"mouse": "Time in game hours before a companion dies (only used if Allow Companion Death is enabled)",
-					"vars": [{ "configINI": "General:fBleedoutTime", "default": 1 }],
+					"vars": [{ "configINI": "General:fBleedoutTime", "default": 4}],
 					"scale": {
 						"valueDecimal": 1,
 						"valueIncrement": 0.5,
