@@ -171,7 +171,7 @@ namespace HardcoreCompanionRevive
 		((void(__thiscall*)(void*, TESForm*, bool, bool))0x8ADED0)(actor, item, false, true);
 	}
 
-	static bool __fastcall OnActivateUnconsciousTeammate(void* actorParam) {
+	static bool __fastcall HandleReviveActivation(void* actorParam) {
 		void* actor = actorParam;
 		void* pc = *(void**)kAddr_PlayerCharacter;
 
@@ -246,7 +246,7 @@ namespace HardcoreCompanionRevive
 		return true;
 	}
 
-	__declspec(naked) void __fastcall OnActivateNPCHook() {
+	__declspec(naked) void __fastcall ReviveActivateNPCHook() {
 		__asm {
 			mov eax, [ecx + 0x108]
 			cmp byte ptr ds:[ecx + 0x18D], 0
@@ -256,7 +256,7 @@ namespace HardcoreCompanionRevive
 			jne done
 
 			push ecx
-			call OnActivateUnconsciousTeammate
+			call HandleReviveActivation
 			pop ecx
 			test al, al
 			jz letVanillaHandle
@@ -278,7 +278,7 @@ namespace HardcoreCompanionRevive
 		}
 	}
 
-	__declspec(naked) void __fastcall OnActivateCreatureHook() {
+	__declspec(naked) void __fastcall ReviveActivateCreatureHook() {
 		__asm {
 			mov eax, [ecx + 0x108]
 			cmp byte ptr ds:[ecx + 0x18D], 0
@@ -288,7 +288,7 @@ namespace HardcoreCompanionRevive
 			jne done
 
 			push ecx
-			call OnActivateUnconsciousTeammate
+			call HandleReviveActivation
 			pop ecx
 			test al, al
 			jz letVanillaHandle
@@ -320,7 +320,7 @@ namespace HardcoreCompanionRevive
 		return g_sRevivePrompt;
 	}
 
-	__declspec(naked) void OnGetPromptHook() {
+	__declspec(naked) void RevivePromptHook() {
 		__asm {
 			push ecx
 			mov eax, [ebp + 8]
@@ -342,7 +342,7 @@ namespace HardcoreCompanionRevive
 		}
 	}
 
-	static int __fastcall GetLifeStateReturnAliveIfCompanion(void* actor) {
+	static int __fastcall GetDownedCompanionLifeState(void* actor) {
 		if (IsHardcoreMode() && GetActorIsTeammate(actor)) {
 			return kLifeState_Alive;
 		}
@@ -649,7 +649,7 @@ namespace HardcoreCompanionRevive
 		return true;
 	}
 
-	static BaseProcess* __fastcall OnKillEssentialSetDownTimerIfCompanion(void* actor) {
+	static BaseProcess* __fastcall StartBleedoutTimerForCompanion(void* actor) {
 		if (!actor) {
 			return nullptr;
 		}
@@ -685,20 +685,39 @@ namespace HardcoreCompanionRevive
 		s_hooksInstalled = false;
 		s_killHookInstalled = false;
 
-		const UInt8 essentialPatch[2] = {0x66, 0x90};
-		if (!WriteMemoryChecked(0x87F437, essentialPatch, sizeof(essentialPatch))) {
+		static const Write16PatchSite kEssentialPatch = {
+			"EssentialCompanion", 0x87F437, {0x75, 0x04}, 0x9066
+		};
+
+		static const RelPatchSite kRelSites[] = {
+			{"ActivateNPC",      0x607B52, 0xE8, {0xE8, 0x79, 0x00, 0xE3, 0xFF}, (UInt32)ReviveActivateNPCHook},
+			{"ActivateCreature", 0x5FA563, 0xE8, {0xE8, 0x68, 0xD6, 0xE3, 0xFF}, (UInt32)ReviveActivateCreatureHook},
+			{"GetPrompt",        0x777892, 0xE9, {0x8B, 0x0C, 0x8D, 0x60, 0x51}, (UInt32)RevivePromptHook},
+			{"OnKillEssential",  0x89DFC6, 0xE8, {0xE8, 0x55, 0xA5, 0x03, 0x00}, (UInt32)StartBleedoutTimerForCompanion},
+			{"LifeState1",       0x882CFF, 0xE8, {0xE8, 0x5C, 0x52, 0xC7, 0xFF}, (UInt32)GetDownedCompanionLifeState},
+			{"LifeState2",       0x8834CD, 0xE8, {0xE8, 0x8E, 0x54, 0xC7, 0xFF}, (UInt32)GetDownedCompanionLifeState},
+			{"LifeState3",       0x883A92, 0xE8, {0xE8, 0xC9, 0x4E, 0xC7, 0xFF}, (UInt32)GetDownedCompanionLifeState},
+			{"LifeState4",       0x883C6E, 0xE8, {0xE8, 0xED, 0x4C, 0xC7, 0xFF}, (UInt32)GetDownedCompanionLifeState},
+			{"IsEssential",      0x89DE40, 0xE8, {0xE8, 0x8B, 0x15, 0xFE, 0xFF}, (UInt32)IsEssentialHook_ActorKill},
+		};
+
+		UInt8 current16[2] = {0};
+		PatchCheckResult essentialResult = CheckWrite16Site(kEssentialPatch, current16);
+		if (essentialResult == PatchCheckResult::kConflict) {
+			ReportPatchConflict(kEssentialPatch.name, kEssentialPatch.address, current16, 2);
 			return;
 		}
 
-		if (!WriteRelBranch(0x607B52, 0xE8, (UInt32)OnActivateNPCHook)) return;
-		if (!WriteRelBranch(0x5FA563, 0xE8, (UInt32)OnActivateCreatureHook)) return;
-		if (!WriteRelBranch(0x777892, 0xE9, (UInt32)OnGetPromptHook)) return;
-		if (!WriteRelBranch(0x89DFC6, 0xE8, (UInt32)OnKillEssentialSetDownTimerIfCompanion)) return;
-		if (!WriteRelBranch(0x882CFF, 0xE8, (UInt32)GetLifeStateReturnAliveIfCompanion)) return;
-		if (!WriteRelBranch(0x8834CD, 0xE8, (UInt32)GetLifeStateReturnAliveIfCompanion)) return;
-		if (!WriteRelBranch(0x883A92, 0xE8, (UInt32)GetLifeStateReturnAliveIfCompanion)) return;
-		if (!WriteRelBranch(0x883C6E, 0xE8, (UInt32)GetLifeStateReturnAliveIfCompanion)) return;
-		if (!WriteRelBranch(0x89DE40, 0xE8, (UInt32)IsEssentialHook_ActorKill)) return;
+		if (!PrecheckRelSites(kRelSites, _countof(kRelSites))) {
+			return;
+		}
+
+		if (!ApplyWrite16SiteIfVanilla(kEssentialPatch)) {
+			return;
+		}
+		if (!ApplyRelSites(kRelSites, _countof(kRelSites))) {
+			return;
+		}
 
 		s_hooksInstalled = true;
 		s_killHookInstalled = true;
