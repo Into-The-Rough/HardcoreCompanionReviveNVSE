@@ -6,3 +6,8 @@ Debug/
 *.opensdf
 *.db
 .vs/
+
+*.bbcode
+nexus_description.*
+NEXUS*DESCRIPTION*
+description.bbcode
